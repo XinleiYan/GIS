@@ -1,6 +1,0 @@
-library(usethis)
-edit_git_config()
-create_github_token()
-library(gitcreds)
-gitcreds_set()
-#new
