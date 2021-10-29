@@ -4,7 +4,6 @@ author: "Grace Yan"
 date: "2021/10/29"
 output: html_document
 ---
-
 Task:
 1.Read in global gender inequality data
 2.Join the global gender inequality index to spatial data of the World, creating a new column of difference in inequality between 2010 and 2019
@@ -12,6 +11,52 @@ Task:
 
 import packages
 ```{r}
-library(
+library(tidyverse)
+library(sf)
+library(here)
+library(janitor)
+library(tmap)
+library(tmaptools)
+library(countrycode)
+```
+read csv and shp
+```{r}
+genderdata_all<- read.csv(here::here("data","Gender Inequality Index (GII).csv"),
+                       na = "..", skip=5) #skip first five lines
+worldshp <- st_read(here::here("data", "World_Countries__Generalized_.shp"))
+```
+select columns needed
+add countrycode using the package
+```{r}
+gender_selected<-genderdata_all %>%
+  clean_names()%>%
+  select(country,x2019,x2010)%>%
+  mutate(difference=x2019-x2010)%>%
+  slice(1:189)%>%#only need 189 rows
+  mutate(iso_code=countrycode(country, origin = 'country.name', destination = 'iso2c'))
+```
+
+Join the csv to world shape file
+```{r}
+Join_data <- worldshp %>% 
+  clean_names() %>%
+  left_join(., 
+            gender_selected,
+            c("aff_iso" = "iso_code"))
+  #merge(.,
+  #      gender_selected, 
+  #      by.x="countryaff", 
+  #      by.y="country",
+  #      no.dups = TRUE)#%>%
+  #distinct(.,country, 
+  #         .keep_all = TRUE)
+
+```
+
+draw map
+```{r}
+tmap_mode("plot")
+qtm(Join_data, 
+    fill = "difference")
 ```
 
